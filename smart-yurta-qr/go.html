@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Smart Yurta — открываем предложение…</title>
+<style>
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f6f4ef;color:#14181f;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;text-align:center;padding:24px}
+a.b{display:inline-block;margin-top:16px;padding:14px 28px;border-radius:12px;background:#0e7a47;color:#fff;text-decoration:none;font-weight:600}
+.s{width:36px;height:36px;margin:0 auto 16px;border:4px solid #d9e8df;border-top-color:#0e7a47;border-radius:50%;animation:r 1s linear infinite}
+@keyframes r{to{transform:rotate(360deg)}}
+</style></head><body>
+<main><div class="s"></div><p>Открываем коммерческое предложение Smart Yurta…</p>
+<a class="b" id="open" href="index.html">Открыть предложение</a></main>
+<script>
+(function () {
+  // Целевая страница лежит рядом с этим файлом.
+  var target = new URL('index.html', location.href);
+  var plain = target.href;
+  var ua = navigator.userAgent || '';
+  var isAndroid = /Android/i.test(ua);
+  var isIOS = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  // Уже в Chrome (Chrome на iOS = CriOS, на Android/десктопе = Chrome без Edge/Opera/Samsung/Yandex)
+  var inChrome = /CriOS/.test(ua) || (/Chrome\//.test(ua) && !/EdgA|Edg\/|OPR\/|SamsungBrowser|YaBrowser|Firefox|FxiOS/.test(ua));
+  var rest = target.host + target.pathname + target.search + target.hash;
+
+  function go(url) { location.replace(url); }
+
+  if (inChrome || (!isAndroid && !isIOS)) {
+    // Chrome уже используется, либо это компьютер: открываем сразу.
+    go(plain);
+    return;
+  }
+  if (isAndroid) {
+    // Intent открывает Chrome; если он не установлен — обычная ссылка в текущем браузере.
+    var intent = 'intent://' + rest + '#Intent;scheme=' + target.protocol.replace(':', '') +
+      ';package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent(plain) + ';end';
+    document.getElementById('open').href = intent;
+    go(intent);
+    return;
+  }
+  // iOS: схема googlechromes:// открывает Chrome; через 1,5 с — запасной вариант.
+  var scheme = target.protocol === 'https:' ? 'googlechromes://' : 'googlechrome://';
+  var chromeUrl = scheme + rest;
+  document.getElementById('open').href = chromeUrl;
+  var t = setTimeout(function () { go(plain); }, 1500);
+  document.addEventListener('visibilitychange', function () { if (document.hidden) clearTimeout(t); });
+  location.href = chromeUrl;
+})();
+</script>
+<noscript><meta http-equiv="refresh" content="0;url=index.html"></noscript>
+</body></html>
